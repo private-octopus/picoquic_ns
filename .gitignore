@@ -1,0 +1,6 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/pico_sim_vs/.vs/pico_sim_vs
+/pico_sim_vs/pico_sim_vs/x64/Debug
