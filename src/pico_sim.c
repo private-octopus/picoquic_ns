@@ -259,7 +259,7 @@ int parse_int(int* x, char const* val)
     int ret = parse_u64(&v, val);
 
     if (ret == 0) {
-        if (v > INT_MAX) {
+        if (v > INT64_MAX) {
             ret = -1;
         }
         else {
@@ -439,7 +439,7 @@ int parse_file_name(char const** x, char const* val)
 void release_text(char const** text)
 {
     if (*text != NULL) {
-        free(*text);
+        free((void*)*text);
         *text = NULL;
     }
 }

@@ -36,7 +36,7 @@ jobs:
       - name: Perform Unit Tests and Check for Leaks
         run: |
             ulimit -c unlimited -S
-            ./picoquic_ns  || PNSRESULT=$? 
+            ./pico_sim sim_specs/dcubic_vs_cubic.txt  || PNSRESULT=$? 
             echo "running picoquic_ns returns <$PNSRESULT> "
             cat sanity.txt
             if [ ! -z ${$PNSRESULT} ]; then
