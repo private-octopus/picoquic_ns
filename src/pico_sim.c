@@ -14,7 +14,6 @@
 
 int parse_spec_file(picoquic_ns_spec_t* spec, FILE* F);
 void release_spec_data(picoquic_ns_spec_t* spec);
-void usage();
 
 #ifdef _WINDOWS
 #include "../pico_sim_vs/pico_sim_vs/getopt.h"
@@ -27,10 +26,17 @@ void usage();
 #define PICOQUIC_DIR "../picoquic"
 #endif
 
-void usage(int exit_code)
+void usage()
 {
-    fprintf(stderr, "Usage: pico_sim [-S <path_to_picoquic>] <simulation_file_path>\n");
-    exit(exit_code);
+    fprintf(stderr, "Pico_sim, picoquic network simularor\n\n");
+    fprintf(stderr, "Usage: pico_sim [options] simulation_specification\n\n");
+    fprintf(stderr, "Examples of simulation specifications are found in the\n");
+    fprintf(stderr, "folder \"sim_specs\"\n");
+    fprintf(stderr, "Pico_sim options:\n");
+    fprintf(stderr, "  -S path  Path to the picoquic source directory, where the\n");
+    fprintf(stderr, "           code will find the key and certificates used for\n");
+    fprintf(stderr, "           setting test connections.\n");
+    fprintf(stderr, "  -h       Print this message.\n");
 }
 
 int main(int argc, char** argv)
@@ -81,20 +87,6 @@ int main(int argc, char** argv)
         release_spec_data(&spec);
     }
     return ret;
-}
-
-void usage()
-{
-    fprintf(stderr, "Pico_sim, picoquic network simularor\n\n");
-    fprintf(stderr, "Usage: pico_sim [options] simulation_specification\n\n");
-    fprintf(stderr, "Examples of simulation specifications are found in the\n");
-    fprintf(stderr, "folder \"sim_specs\"\n");
-    fprintf(stderr, "Pico_sim options:\n");
-    fprintf(stderr, "  -S path  Path to the picoquic source directory, where the\n");
-    fprintf(stderr, "           code will find the key and certificates used for\n");
-    fprintf(stderr, "           setting test connections.\n");
-    fprintf(stderr, "  -h       Print this message.\n");
-
 }
 
 typedef enum {
