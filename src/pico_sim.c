@@ -59,7 +59,7 @@ int main(int argc, char** argv)
         ret = -1;
     }
     else if ((F = picoquic_file_open((spec_file_name = argv[optind]), "r")) == NULL) {
-        fprintf(stderr, "Cannot open file <%s>\n", file_name);
+        fprintf(stderr, "Cannot open file <%s>\n", spec_file_name);
         ret = -1;
     }
     else
