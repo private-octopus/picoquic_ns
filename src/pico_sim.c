@@ -32,6 +32,7 @@ int main(int argc, char** argv)
     int ret = 0;
     picoquic_ns_spec_t spec = { 0 };
     FILE* F = NULL;
+    char const * spec_file_name = NULL;
     char const* source_dir = PICOQUIC_DIR;
     char const* option_string = "S:h";
     int opt;
@@ -57,18 +58,18 @@ int main(int argc, char** argv)
         usage();
         ret = -1;
     }
-    else if ((F = picoquic_file_open(argv[optind], "r")) == NULL) {
-        fprintf(stderr, "Cannot open file <%s>\n", argv[optind]);
+    else if ((F = picoquic_file_open((spec_file_name = argv[optind]), "r")) == NULL) {
+        fprintf(stderr, "Cannot open file <%s>\n", file_name);
         ret = -1;
     }
     else
     {
         if (parse_spec_file(&spec, F) != 0) {
-            fprintf(stderr, "Error when processing file <%s>\n", argv[1]);
+            fprintf(stderr, "Error when processing file <%s>\n", spec_file_name);
         }
         else {
             ret = picoquic_ns(&spec);
-            printf("picoquic_ns (%s) returns %d\n", argv[1], ret);
+            printf("picoquic_ns (%s) returns %d\n", spec_file_name, ret);
         }
         F = picoquic_file_close(F);
         release_spec_data(&spec);
