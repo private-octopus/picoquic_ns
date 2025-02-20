@@ -439,7 +439,7 @@ int parse_file_name(char const** x, char const* val)
 void release_text(char const** text)
 {
     if (*text != NULL) {
-        free(*text);
+        free((void*)*text);
         *text = NULL;
     }
 }
