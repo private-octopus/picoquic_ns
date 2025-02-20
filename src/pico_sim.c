@@ -14,6 +14,7 @@
 
 int parse_spec_file(picoquic_ns_spec_t* spec, FILE* F);
 void release_spec_data(picoquic_ns_spec_t* spec);
+void usage();
 
 #ifdef _WINDOWS
 #include "../pico_sim_vs/pico_sim_vs/getopt.h"
@@ -37,32 +38,33 @@ int main(int argc, char** argv)
     int ret = 0;
     picoquic_ns_spec_t spec = { 0 };
     FILE* F = NULL;
-    char const* picoquic_dir = PICOQUIC_DIR;
-    char const* spec_file_name = NULL;
-    char const* option_string = "hS:";
+    char const * spec_file_name = NULL;
+    char const* source_dir = PICOQUIC_DIR;
+    char const* option_string = "S:h";
     int opt;
-
 
     /* Get the parameters */
     while ((opt = getopt(argc, argv, option_string)) != -1) {
         switch (opt) {
         case 'S':
-            picoquic_dir = optarg;
+            source_dir = optarg;
             break;
         case 'h':
-            usage(0);
+            usage();
+            exit(0);
         default:
-            usage(-1);
-            break;
+            usage();
+            exit(-1);
         }
     }
+    picoquic_set_solution_dir(source_dir);
 
-    picoquic_set_solution_dir(picoquic_dir);
-    if (argc < 2) {
-        fprintf(stderr, "Usage: pico_sim <spec-file>\n");
+    if (optind >= argc || optind + 1 < argc) {
+        fprintf(stderr, "Unexpected arguments.\n");
+        usage();
         ret = -1;
     }
-    else if ((F = picoquic_file_open((spec_file_name=argv[optind]), "r")) == NULL) {
+    else if ((F = picoquic_file_open((spec_file_name = argv[optind]), "r")) == NULL) {
         fprintf(stderr, "Cannot open file <%s>\n", spec_file_name);
         ret = -1;
     }
@@ -79,6 +81,20 @@ int main(int argc, char** argv)
         release_spec_data(&spec);
     }
     return ret;
+}
+
+void usage()
+{
+    fprintf(stderr, "Pico_sim, picoquic network simularor\n\n");
+    fprintf(stderr, "Usage: pico_sim [options] simulation_specification\n\n");
+    fprintf(stderr, "Examples of simulation specifications are found in the\n");
+    fprintf(stderr, "folder \"sim_specs\"\n");
+    fprintf(stderr, "Pico_sim options:\n");
+    fprintf(stderr, "  -S path  Path to the picoquic source directory, where the\n");
+    fprintf(stderr, "           code will find the key and certificates used for\n");
+    fprintf(stderr, "           setting test connections.\n");
+    fprintf(stderr, "  -h       Print this message.\n");
+
 }
 
 typedef enum {

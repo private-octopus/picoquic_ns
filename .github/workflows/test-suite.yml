@@ -25,7 +25,7 @@ jobs:
           ./ci/build_picotls.sh
           ./ci/build_picoquic.sh
      
-      # Build picoquic_ns and run tests
+      # Build pico_sim and run tests
       - run: |
           mkdir build
           cd build
@@ -34,7 +34,7 @@ jobs:
           make
           ulimit -c unlimited -S
           #TODO: iterate through all the scenarios
-          ./pico_sim -S ../../picoquic ../sim_spec/dcubic_vs_cubic.txt && QDRESULT=$? 
+          ./pico_sim -S ../../picoquic ../sim_specs/dcubic_vs_cubic.txt && QDRESULT=$? 
           if [ ${QDRESULT} == 0 ]; then exit 0; fi;
           exit 1
 
