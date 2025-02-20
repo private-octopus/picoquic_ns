@@ -259,7 +259,7 @@ int parse_int(int* x, char const* val)
     int ret = parse_u64(&v, val);
 
     if (ret == 0) {
-        if (v > INT_MAX) {
+        if (v > 0x7ffffff) {
             ret = -1;
         }
         else {
