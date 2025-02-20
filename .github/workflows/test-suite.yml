@@ -34,7 +34,7 @@ jobs:
           make
           ulimit -c unlimited -S
           #TODO: iterate through all the scenarios
-          ./picoquic_ns ../sim_spec/dcubic_vs_cubic.txt && QDRESULT=$? 
+          ./pico_sim -S ../../picoquic ../sim_spec/dcubic_vs_cubic.txt && QDRESULT=$? 
           if [ ${QDRESULT} == 0 ]; then exit 0; fi;
           exit 1
 

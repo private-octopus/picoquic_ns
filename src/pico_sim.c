@@ -16,43 +16,67 @@ int parse_spec_file(picoquic_ns_spec_t* spec, FILE* F);
 void release_spec_data(picoquic_ns_spec_t* spec);
 
 #ifdef _WINDOWS
+#include "../pico_sim_vs/pico_sim_vs/getopt.h"
 #ifdef _WINDOWS64
 #define PICOQUIC_DIR "../../../../picoquic"
 #else
 #define PICOQUIC_DIR "../../../picoquic"
 #endif
 #else
-/* Not defining PICOQUIC_DIR for now */
+#define PICOQUIC_DIR "../picoquic"
 #endif
+
+void usage(int exit_code)
+{
+    fprintf(stderr, "Usage: pico_sim [-S <path_to_picoquic>] <simulation_file_path>\n");
+    exit(exit_code);
+}
 
 int main(int argc, char** argv)
 {
     int ret = 0;
     picoquic_ns_spec_t spec = { 0 };
     FILE* F = NULL;
+    char const* picoquic_dir = PICOQUIC_DIR;
+    char const* spec_file_name = NULL;
+    char const* option_string = "hS:";
+    int opt;
 
-#ifdef PICOQUIC_DIR
-    picoquic_set_solution_dir(PICOQUIC_DIR);
-#endif
 
+    /* Get the parameters */
+    while ((opt = getopt(argc, argv, option_string)) != -1) {
+        switch (opt) {
+        case 'S':
+            picoquic_dir = optarg;
+            break;
+        case 'h':
+            usage(0);
+        default:
+            usage(-1);
+            break;
+        }
+    }
+
+    picoquic_set_solution_dir(picoquic_dir);
     if (argc < 2) {
         fprintf(stderr, "Usage: pico_sim <spec-file>\n");
         ret = -1;
     }
-    else if ((F = picoquic_file_open(argv[1], "r")) == NULL) {
-        fprintf(stderr, "Cannot open file <%s>\n", argv[1]);
+    else if ((F = picoquic_file_open((spec_file_name=argv[optind]), "r")) == NULL) {
+        fprintf(stderr, "Cannot open file <%s>\n", spec_file_name);
         ret = -1;
     }
     else
     {
         if (parse_spec_file(&spec, F) != 0) {
-            fprintf(stderr, "Error when processing file <%s>\n", argv[1]);
+            fprintf(stderr, "Error when processing file <%s>\n", spec_file_name);
         }
         else {
             ret = picoquic_ns(&spec);
-            printf("picoquic_ns (%s) returns %d\n", argv[1], ret);
+            printf("picoquic_ns (%s) returns %d\n", spec_file_name, ret);
         }
         F = picoquic_file_close(F);
+        release_spec_data(&spec);
     }
     return ret;
 }
