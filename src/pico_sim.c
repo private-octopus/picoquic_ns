@@ -90,11 +90,6 @@ void usage()
 
 }
 
-int set_solution_dir(char const* source_dir)
-{
-
-}
-
 typedef enum {
     e_main_start_time = 0,
     e_background_start_time,
