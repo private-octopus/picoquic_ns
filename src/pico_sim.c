@@ -333,11 +333,11 @@ int parse_double(double* x, char const* val)
     return ret;
 }
 
-int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val)
+int parse_cc_algo(picoquic_congestion_algorithm_t ** x, char const* val)
 {
     int ret = 0;
 
-    if ((*x = picoquic_get_congestion_algorithm(val)) == NULL) {
+    if ((*x = (picoquic_congestion_algorithm_t *)picoquic_get_congestion_algorithm(val)) == NULL) {
         ret = -1;
     }
 
