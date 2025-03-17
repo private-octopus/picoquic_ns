@@ -49,6 +49,9 @@ int main(int argc, char** argv)
     char const* option_string = "S:h";
     int opt;
 
+    /* Load the available set of congestion control algorithms */
+    picoquic_register_all_congestion_control_algorithms();
+
     /* Get the parameters */
     while ((opt = getopt(argc, argv, option_string)) != -1) {
         switch (opt) {
@@ -333,30 +336,11 @@ int parse_double(double* x, char const* val)
 int parse_cc_algo(picoquic_congestion_algorithm_t** x, char const* val)
 {
     int ret = 0;
-    if (strcmp(val, picoquic_newreno_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_newreno_algorithm;
-    }
-    else if (strcmp(val, picoquic_cubic_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_cubic_algorithm;
-    }
-    else if (strcmp(val, picoquic_dcubic_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_dcubic_algorithm;
-    }
-    else if (strcmp(val, picoquic_fastcc_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_fastcc_algorithm;
-    }
-    else if (strcmp(val, picoquic_bbr_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_bbr_algorithm;
-    }
-    else if (strcmp(val, picoquic_prague_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_prague_algorithm;
-    }
-    else if (strcmp(val, picoquic_bbr1_algorithm->congestion_algorithm_id) == 0) {
-        *x = picoquic_bbr1_algorithm;
-    }
-    else {
+
+    if ((*x = picoquic_get_congestion_algorithm(val)) == NULL) {
         ret = -1;
     }
+
     return ret;
 }
 
