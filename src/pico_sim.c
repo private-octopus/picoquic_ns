@@ -184,7 +184,7 @@ int parse_spec_file(picoquic_ns_spec_t * spec, FILE* F)
 int parse_u64(uint64_t* x, char const* val);
 int parse_int(int* x, char const* val);
 int parse_double(double* x, char const* val);
-int parse_cc_algo(picoquic_congestion_algorithm_t** x, char const* val);
+int parse_cc_algo(picoquic_congestion_algorithm_t const** x, char const* val);
 int parse_cid(picoquic_connection_id_t* x, char const* val);
 int parse_text(char const** x, char const* val);
 int parse_file_name(char const** x, char const* val);
@@ -333,7 +333,7 @@ int parse_double(double* x, char const* val)
     return ret;
 }
 
-int parse_cc_algo(picoquic_congestion_algorithm_t** x, char const* val)
+int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val)
 {
     int ret = 0;
 
