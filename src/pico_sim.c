@@ -98,7 +98,9 @@ typedef enum {
     e_main_scenario_text,
     e_background_scenario_text,
     e_main_cc_algo,
+    e_main_cc_options,
     e_background_cc_algo,
+    e_background_cc_options,
     e_nb_connections,
     e_main_target_time,
     e_data_rate_in_gbps,
@@ -124,7 +126,9 @@ spec_param_t params[] = {
     { e_main_scenario_text, "main_scenario_text", 18  },
     { e_background_scenario_text, "background_scenario_text", 24 },
     { e_main_cc_algo, "main_cc_algo", 12 },
+    { e_main_cc_options, "main_cc_options", 15 },
     { e_background_cc_algo, "background_cc_algo", 18 },
+    { e_background_cc_options, "background_cc_options", 21 },
     { e_nb_connections, "nb_connections", 14 },
     { e_data_rate_in_gbps, "data_rate_in_gbps", 17 },
     { e_latency, "latency" , 7},
@@ -184,7 +188,7 @@ int parse_spec_file(picoquic_ns_spec_t * spec, FILE* F)
 int parse_u64(uint64_t* x, char const* val);
 int parse_int(int* x, char const* val);
 int parse_double(double* x, char const* val);
-int parse_cc_algo(picoquic_congestion_algorithm_t ** x, char const* val);
+int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val);
 int parse_cid(picoquic_connection_id_t* x, char const* val);
 int parse_text(char const** x, char const* val);
 int parse_file_name(char const** x, char const* val);
@@ -225,8 +229,14 @@ int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
         case e_main_cc_algo:
             ret = parse_cc_algo(&spec->main_cc_algo, line);
             break;
+        case e_main_cc_options:
+            ret = parse_text(&spec->main_cc_options, line);
+            break;
         case e_background_cc_algo:
             ret = parse_cc_algo(&spec->background_cc_algo, line);
+            break;
+        case e_background_cc_options:
+            ret = parse_text(&spec->background_cc_options, line);
             break;
         case e_nb_connections:
             ret = parse_int(&spec->nb_connections, line);
@@ -333,11 +343,11 @@ int parse_double(double* x, char const* val)
     return ret;
 }
 
-int parse_cc_algo(picoquic_congestion_algorithm_t ** x, char const* val)
+int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val)
 {
     int ret = 0;
 
-    if ((*x = (picoquic_congestion_algorithm_t *)picoquic_get_congestion_algorithm(val)) == NULL) {
+    if ((*x = picoquic_get_congestion_algorithm(val)) == NULL) {
         ret = -1;
     }
 
