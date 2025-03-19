@@ -1,6 +1,6 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.13)
 cmake_policy(SET CMP0003 NEW)
-project(quicrq C CXX)
+project(picoquic_ns C CXX)
 find_package (Threads REQUIRED)
 FIND_PACKAGE(PkgConfig REQUIRED)
 
@@ -13,6 +13,20 @@ if(DISABLE_DEBUG_PRINTF)
 endif()
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
+OPTION(PICOQUIC_NS_FETCH_PICOQUIC "Fetch PicoQUIC during configuration" OFF)
+if(PICOQUIC_NS_FETCH_PICOQUIC)
+    # fetch picoquic from GitHub
+    include(FetchContent)
+    FetchContent_Declare(
+            picoquic
+            GIT_REPOSITORY  https://github.com/private-octopus/picoquic.git
+            GIT_TAG         master
+    )
+    set(PICOQUIC_FETCH_PTLS ON)
+    set(picoquic_BUILD_TESTS ON)
+    FetchContent_MakeAvailable(picoquic)
+endif ()
 
 find_package(Picoquic REQUIRED)
 message(STATUS "Picoquic/include: ${Picoquic_INCLUDE_DIRS}" )
@@ -43,14 +57,16 @@ target_link_libraries(pico_sim
     ${CMAKE_THREAD_LIBS_INIT}
 )
 
-# get all project files for formatting
-file(GLOB_RECURSE CLANG_FORMAT_SOURCE_FILES *.c *.h)
+if (NOT PICOQUIC_NS_FETCH_PICOQUIC)
+    # get all project files for formatting
+    file(GLOB_RECURSE CLANG_FORMAT_SOURCE_FILES *.c *.h)
 
-# Adds clangformat as target that formats all source files
-add_custom_target(
-    clangformat
-    COMMAND clang-format
-    -style=Webkit
-    -i
-    ${CLANG_FORMAT_SOURCE_FILES}
-)
+    # Adds clangformat as target that formats all source files
+    add_custom_target(
+        clangformat
+        COMMAND clang-format
+        -style=Webkit
+        -i
+        ${CLANG_FORMAT_SOURCE_FILES}
+    )
+endif (NOT PICOQUIC_NS_FETCH_PICOQUIC)
