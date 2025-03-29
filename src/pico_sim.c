@@ -110,6 +110,7 @@ typedef enum {
     e_l4s_max,
     e_icid,
     e_qlog_dir,
+    e_link_scenario,
     e_error
 } spec_param_enum;
 
@@ -136,7 +137,8 @@ spec_param_t params[] = {
     { e_queue_delay_max, "queue_delay_max", 15 },
     { e_l4s_max, "l4s_max", 7 },
     { e_icid, "icid", 4 },
-    { e_qlog_dir, "qlog_dir", 8 }
+    { e_qlog_dir, "qlog_dir", 8 },
+    { e_link_scenario, "link_scenario", 13 }
 };
 
 const size_t nb_params = sizeof(params) / sizeof(spec_param_t);
@@ -192,6 +194,7 @@ int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val);
 int parse_cid(picoquic_connection_id_t* x, char const* val);
 int parse_text(char const** x, char const* val);
 int parse_file_name(char const** x, char const* val);
+int parse_link_scenario(picoquic_ns_link_scenario_enum * link_scenario, char const* val);
 void release_text(char const** text);
 
 int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
@@ -261,6 +264,9 @@ int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
             break;
         case e_qlog_dir:
             ret = parse_file_name(&spec->qlog_dir, line);
+            break;
+        case e_link_scenario:
+            ret = parse_link_scenario(&spec->link_scenario, line);
             break;
         default:
             fprintf(stderr, "Incorrect specification line: %s\n", line);
@@ -460,6 +466,38 @@ int parse_file_name(char const** x, char const* val)
 #else
     return parse_text(x, val);
 #endif
+}
+
+typedef struct st_link_scenario_spec_t {
+    picoquic_ns_link_scenario_enum v;
+    char const* n;
+    size_t l;
+}link_scenario_spec_t;
+
+static const link_scenario_spec_t link_scenarios[] = {
+    { link_scenario_none, "none", 4 },
+    { link_scenario_black_hole, "black_hole", 10  },
+    { link_scenario_drop_and_back, "drop_and_back", 13 },
+    { link_scenario_low_and_up, "low_and_up", 10 },
+    { link_scenario_wifi_fade, "wifi_fade", 5 },
+    { link_scenario_wifi_suspension, "wifi_suspension", 15 }
+};
+
+size_t nb_link_scenarios = sizeof(link_scenarios) / sizeof(link_scenario_spec_t);
+
+int parse_link_scenario(picoquic_ns_link_scenario_enum* link_scenario, char const* val)
+{
+    int ret = -1;
+    *link_scenario = link_scenario_none;
+    for (size_t i = 0; i < nb_link_scenarios; i++) {
+        if (strcmp(val, link_scenarios[i].n) == 0) {
+            *link_scenario = link_scenarios[i].v;
+            ret = 0;
+            break;
+        }
+    }
+
+    return ret;
 }
 
 void release_text(char const** text)
