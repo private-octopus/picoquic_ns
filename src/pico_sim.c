@@ -194,7 +194,7 @@ int parse_cc_algo(picoquic_congestion_algorithm_t const ** x, char const* val);
 int parse_cid(picoquic_connection_id_t* x, char const* val);
 int parse_text(char const** x, char const* val);
 int parse_file_name(char const** x, char const* val);
-int parse_link_scenario(picoquic_ns_link_scenario_enum * link_scenario, char const* val);
+int parse_link_scenario(picoquic_ns_spec_t* link_scenario, char const* val);
 void release_text(char const** text);
 
 int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
@@ -266,7 +266,7 @@ int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
             ret = parse_file_name(&spec->qlog_dir, line);
             break;
         case e_link_scenario:
-            ret = parse_link_scenario(&spec->link_scenario, line);
+            ret = parse_link_scenario(spec, line);
             break;
         default:
             fprintf(stderr, "Incorrect specification line: %s\n", line);
@@ -282,6 +282,10 @@ void release_spec_data(picoquic_ns_spec_t* spec)
     release_text(&spec->main_scenario_text);
     release_text(&spec->background_scenario_text);
     release_text(&spec->qlog_dir);
+    if (spec->link_scenario == link_scenario_none && spec->vary_link_spec != NULL) {
+        free(spec->vary_link_spec);
+        spec->vary_link_spec = NULL;
+    }
 }
 
 int parse_u64(uint64_t* x, char const* val)
@@ -484,20 +488,147 @@ static const link_scenario_spec_t link_scenarios[] = {
 };
 
 size_t nb_link_scenarios = sizeof(link_scenarios) / sizeof(link_scenario_spec_t);
+int parse_specified_link_scenario(picoquic_ns_spec_t* spec, char const* val);
 
-int parse_link_scenario(picoquic_ns_link_scenario_enum* link_scenario, char const* val)
+int parse_link_scenario(picoquic_ns_spec_t* spec, char const* val)
 {
     int ret = -1;
-    *link_scenario = link_scenario_none;
+    spec->link_scenario = link_scenario_none;
     for (size_t i = 0; i < nb_link_scenarios; i++) {
         if (strcmp(val, link_scenarios[i].n) == 0) {
-            *link_scenario = link_scenarios[i].v;
+            spec->link_scenario = link_scenarios[i].v;
             ret = 0;
             break;
         }
     }
+    if (ret < 0) {
+        /* Not a stock link scenario. Parse the details */
+        ret = parse_specified_link_scenario(spec, val);
+    }
 
     return ret;
+}
+
+
+size_t count_char(char const* val, char target);
+char const* parse_link_spec_item(picoquic_ns_link_spec_t* line_spec, char const* val);
+
+int parse_specified_link_scenario(picoquic_ns_spec_t * spec, char const * val)
+{
+    int ret = -1;
+    size_t vary_link_max = count_char(val, ';') + 1;
+    picoquic_ns_link_spec_t* vary_link_spec = (picoquic_ns_link_spec_t*)malloc(sizeof(picoquic_ns_link_spec_t) * vary_link_max);
+
+    if (vary_link_spec != NULL) {
+        char const* next_val = val;
+        size_t vary_link_nb = 0;
+        memset(vary_link_spec, 0, sizeof(picoquic_ns_link_spec_t) * vary_link_max);
+
+        while (vary_link_nb < vary_link_max) {
+            next_val = parse_link_spec_item(&vary_link_spec[vary_link_nb], next_val);
+            if (next_val == NULL) {
+                /* Found an error in the text */
+                break;
+            }
+            else {
+                vary_link_nb++;
+                if (*next_val == 0) {
+                    /* parsed the last spec element */
+                    ret = 0;
+                    break;
+                }
+            }
+        }
+        if (ret < 0) {
+            free(vary_link_spec);
+        }
+        else {
+            spec->link_scenario = link_scenario_none;
+            spec->vary_link_nb = vary_link_nb;
+            spec->vary_link_spec = vary_link_spec;
+        }
+    }
+    return ret;
+}
+
+size_t count_char(char const* val, char target)
+{
+    char const * x = val;
+    size_t n = 0;
+
+    while (*x != 0) {
+        if (*x == target) {
+            n++;
+        }
+        x++;
+    }
+    return n;
+}
+
+char const* parse_link_spec_item(picoquic_ns_link_spec_t * line_spec, char const* val)
+{
+    int is_first = 1;
+    int ret = 0;
+    char const* next_val = val;
+
+    while (*next_val != 0 && *next_val != ';' && ret == 0) {
+        char intermediate[256];
+        size_t copied = 0;
+
+        while (*next_val != 0 && *next_val != ':' && *next_val != ';' && copied < 255) {
+            intermediate[copied] = *next_val;
+            copied++;
+            next_val++;
+        }
+        intermediate[copied] = 0;
+        if (*next_val == ':') {
+            next_val++;
+        }
+        else if (*next_val != 0 && *next_val != ';') {
+            /* malformed parameter ! */
+            ret = -1;
+            break;
+        }
+        if (is_first) {
+            /* parse the duration */
+            ret = parse_u64(&line_spec->duration, intermediate);
+            is_first = 0;
+        }
+        else
+        {
+            switch (intermediate[0]) {
+            case 'U':
+                ret = parse_double(&line_spec->data_rate_in_gbps_up, &intermediate[1]);
+                break;
+            case 'D':
+                ret = parse_double(&line_spec->data_rate_in_gbps_down, &intermediate[1]);
+                break;
+            case 'L':
+                ret = parse_u64(&line_spec->latency, &intermediate[1]);
+                break;
+            case 'J':
+                ret = parse_u64(&line_spec->jitter, &intermediate[1]);
+                break;
+            case 'Q':
+                ret = parse_u64(&line_spec->queue_delay_max, &intermediate[1]);
+                break;
+            case 'S':
+                ret = parse_u64(&line_spec->l4s_max, &intermediate[1]);
+                break;
+            default:
+                /* unknown parameter */
+                ret = -1;
+                break;
+            }
+        }
+    }
+    if (ret < 0) {
+        next_val = NULL;
+    }
+    else if (*next_val == ';') {
+        next_val++;
+    }
+    return next_val;
 }
 
 void release_text(char const** text)
@@ -507,3 +638,4 @@ void release_text(char const** text)
         *text = NULL;
     }
 }
+
