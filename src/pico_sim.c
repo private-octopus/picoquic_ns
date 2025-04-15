@@ -80,10 +80,10 @@ int main(int argc, char** argv)
     else
     {
         if (parse_spec_file(&spec, F) != 0) {
-            fprintf(stderr, "Error when processing file <%s>\n", spec_file_name);
+            printf("Error when processing file <%s>\n", spec_file_name);
         }
         else {
-            ret = picoquic_ns(&spec);
+            ret = picoquic_ns(&spec, stderr);
             printf("picoquic_ns (%s) returns %d\n", spec_file_name, ret);
         }
         F = picoquic_file_close(F);
@@ -110,6 +110,11 @@ typedef enum {
     e_l4s_max,
     e_icid,
     e_qlog_dir,
+    e_qperf_log,
+    e_media_stats_start,
+    e_media_excluded,
+    e_media_latency_average,
+    e_media_latency_max,
     e_error
 } spec_param_enum;
 
@@ -136,7 +141,12 @@ spec_param_t params[] = {
     { e_queue_delay_max, "queue_delay_max", 15 },
     { e_l4s_max, "l4s_max", 7 },
     { e_icid, "icid", 4 },
-    { e_qlog_dir, "qlog_dir", 8 }
+    { e_qlog_dir, "qlog_dir", 8 },
+    { e_qperf_log, "qperf_log", 9},
+    { e_media_stats_start, "media_stats_start", 17},
+    { e_media_excluded, "media_excluded", 14},
+    { e_media_latency_average, "media_latency_average", 21},
+    { e_media_latency_max, "media_latency_max", 17},
 };
 
 const size_t nb_params = sizeof(params) / sizeof(spec_param_t);
@@ -262,9 +272,27 @@ int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
         case e_qlog_dir:
             ret = parse_file_name(&spec->qlog_dir, line);
             break;
-        default:
-            fprintf(stderr, "Incorrect specification line: %s\n", line);
+        case e_qperf_log:
+            ret = parse_file_name(&spec->qperf_log, line);
             break;
+        case e_media_stats_start:
+            ret = parse_u64(&spec->media_stats_start, line);
+            break;
+        case e_media_excluded:
+            ret = parse_text(&spec->media_excluded, line);
+            break;
+        case e_media_latency_average:
+            ret = parse_u64(&spec->media_latency_average, line);
+            break;
+        case e_media_latency_max:
+            ret = parse_u64(&spec->media_latency_max, line);
+            break;
+        default:
+            ret = -1;
+            break;
+        }
+        if (ret != 0) {
+            fprintf(stderr, "Error parsing param %d: %s\n", p_e, line);
         }
     }
 
