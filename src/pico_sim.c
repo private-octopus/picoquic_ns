@@ -80,11 +80,11 @@ int main(int argc, char** argv)
     else
     {
         if (parse_spec_file(&spec, F) != 0) {
-            printf("Error when processing file <%s>\n", spec_file_name);
+            fprintf(stderr, "Error when processing file <%s>\n", spec_file_name);
         }
         else {
             ret = picoquic_ns(&spec, stderr);
-            printf("picoquic_ns (%s) returns %d\n", spec_file_name, ret);
+            fprintf(stderr, "picoquic_ns (%s) returns %d\n", spec_file_name, ret);
         }
         F = picoquic_file_close(F);
         release_spec_data(&spec);
@@ -143,6 +143,7 @@ spec_param_t params[] = {
     { e_l4s_max, "l4s_max", 7 },
     { e_icid, "icid", 4 },
     { e_qlog_dir, "qlog_dir", 8 },
+    { e_link_scenario, "link_scenario", 13 },
     { e_qperf_log, "qperf_log", 9},
     { e_media_stats_start, "media_stats_start", 17},
     { e_media_excluded, "media_excluded", 14},
@@ -274,6 +275,9 @@ int parse_param(picoquic_ns_spec_t* spec, spec_param_enum p_e, char const* line)
         case e_qlog_dir:
             ret = parse_file_name(&spec->qlog_dir, line);
             break;
+        case e_link_scenario:
+            ret = parse_link_scenario(spec, line);
+            break;
         case e_qperf_log:
             ret = parse_file_name(&spec->qperf_log, line);
             break;
@@ -306,6 +310,10 @@ void release_spec_data(picoquic_ns_spec_t* spec)
     release_text(&spec->main_scenario_text);
     release_text(&spec->background_scenario_text);
     release_text(&spec->qlog_dir);
+    if (spec->link_scenario == link_scenario_none && spec->vary_link_spec != NULL) {
+        free(spec->vary_link_spec);
+        spec->vary_link_spec = NULL;
+    }
     release_text(&spec->qperf_log);
     release_text(&spec->media_excluded);
 }

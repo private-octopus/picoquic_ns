@@ -11,7 +11,7 @@
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <LocalDebuggerCommandArguments>-S $(SolutionDir)\..\..\picoquic $(SolutionDir)..\sim_specs\bbr_media.txt</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>-S $(SolutionDir)\..\..\picoquic $(SolutionDir)..\sim_specs\cubic_vary_link.txt</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
   </PropertyGroup>
