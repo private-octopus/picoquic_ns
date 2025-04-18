@@ -304,6 +304,8 @@ void release_spec_data(picoquic_ns_spec_t* spec)
     release_text(&spec->main_scenario_text);
     release_text(&spec->background_scenario_text);
     release_text(&spec->qlog_dir);
+    release_text(&spec->qperf_log);
+    release_text(&spec->media_excluded);
 }
 
 int parse_u64(uint64_t* x, char const* val)
