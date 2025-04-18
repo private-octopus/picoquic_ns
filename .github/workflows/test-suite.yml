@@ -35,8 +35,10 @@ jobs:
           ulimit -c unlimited -S
           #TODO: iterate through all the scenarios
           ./pico_sim -S ../../picoquic ../sim_specs/dcubic_vs_cubic.txt && QDRESULT=$? 
-          if [ ${QDRESULT} == 0 ]; then exit 0; fi;
+          if [ ${QDRESULT} != 0 ]; then exit 1; fi;
           ./pico_sim -S ../../picoquic ../sim_specs/cubic_vary_link.txt && QDRESULT=$? 
-          if [ ${QDRESULT} == 0 ]; then exit 0; fi;
-          exit 1
+          if [ ${QDRESULT} != 0 ]; then exit 1; fi;
+          ./pico_sim -S ../../picoquic ../sim_specs/bbr_media.txt && QDRESULT=$? 
+          if [ ${QDRESULT} != 0 ]; then exit 1; fi;
+          exit 0
 
