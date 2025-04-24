@@ -28,7 +28,7 @@ void release_spec_data(picoquic_ns_spec_t* spec);
 
 void usage()
 {
-    fprintf(stderr, "Pico_sim, picoquic network simularor\n\n");
+    fprintf(stderr, "Pico_sim, picoquic network simulator\n\n");
     fprintf(stderr, "Usage: pico_sim [options] simulation_specification\n\n");
     fprintf(stderr, "Examples of simulation specifications are found in the\n");
     fprintf(stderr, "folder \"sim_specs\"\n");
