@@ -2,10 +2,10 @@ main_cc_algo: cubic
 main_start_time: 0
 main_scenario_text: =b1:*1:397:10000000;
 nb_connections: 1
-main_target_time: 10100000
+main_target_time: 10200000
 data_rate_in_gbps: 0.02
 latency: 40000
 queue_delay_max: 80000
 icid: ccc0cb00
 qlog_dir: cclog
-link_scenario: 1000000:U0.01:D0.01:L5000:J0:Q15000:S0;2000000:U0.001:D0.001:L5000:Q15000;10000000:U0.01:D0.01:L5000:Q15000
+link_scenario: 1000000:U0.01:D0.01:L5000:J0:Q15000:S0;2000000:U0.001:D0.001:L5000:Q15000:B2:P18;10000000:U0.01:D0.01:L5000:Q15000
