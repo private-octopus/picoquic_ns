@@ -12,8 +12,6 @@
 #include "picoquic_ns.h"
 #include "picoquic_utils.h"
 
-#include "c4.h"
-
 int parse_spec_file(picoquic_ns_spec_t* spec, FILE* F);
 void release_spec_data(picoquic_ns_spec_t* spec);
 
@@ -53,11 +51,6 @@ int main(int argc, char** argv)
 
     /* Load the available set of congestion control algorithms */
     picoquic_register_all_congestion_control_algorithms();
-
-    if (picoquic_register_cc_algorithm(c4_algorithm) != 0) {
-        fprintf(stderr, "Could not register the C4 algorithm.\n");
-        return -1;
-    }
 
     /* Get the parameters */
     while ((opt = getopt(argc, argv, option_string)) != -1) {
