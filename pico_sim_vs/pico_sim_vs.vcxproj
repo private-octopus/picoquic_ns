@@ -142,7 +142,6 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\c4\src\c4.c" />
     <ClCompile Include="..\src\pico_sim.c" />
     <ClCompile Include="pico_sim_vs\getopt.c" />
   </ItemGroup>
